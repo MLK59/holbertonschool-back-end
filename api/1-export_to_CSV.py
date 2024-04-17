@@ -42,9 +42,11 @@ def main():
         csv_file = f"{employee_id}.csv"
         with open(csv_file, mode='w', newline='') as file:
             writer = csv.writer(file)
+            # Write header row
             writer.writerow(["USER_ID", "USERNAME", "TASK_COMPLETED_STATUS", "TASK_TITLE"])
+            # Write data rows
             for task, completed in completed_tasks:
-                writer.writerow([employee_id, employee['name'], completed, task])
+                writer.writerow([employee_id, employee['username'], completed, task])
 
         print(f"CSV file '{csv_file}' has been created successfully.")
 
