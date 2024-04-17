@@ -1,31 +1,35 @@
-#!/usr/bin/python3
-""" using this REST API """
+#!/bin/user/python3
 
 import requests
 import sys
 
-API_URL = "https://jsonplaceholder.typicode.com/"
+def fetch_todo_progress(employee_id):
+    # API endpoint with f-strings for clear URL construction
+    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
+
+    # Fetching data from the API
+    response = requests.get(url)
+    todos = response.json()
+
+    # Counting completed and total tasks
+    total_tasks = len(todos)
+    completed_tasks = sum(1 for todo in todos if todo['completed'])
+
+    # Getting employee name with separate request for clarity
+    user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+    user_response = requests.get(user_url)
+    employee_name = user_response.json()['name']
+
+    # Printing progress with f-strings for better formatting
+    print(f"Employee {employee_name} is done with tasks({completed_tasks}/{total_tasks}):")
+    for todo in todos:
+        if todo['completed']:
+            print(f"\t{todo['title']}")
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: ./0-gather_data_from_an_API.py <employee id>")
+        print("Usage: python script.py <employee_id>")
         sys.exit(1)
 
-    id = sys.argv[1]
-
-    """ check user's information """
-    employee = requests.get(API_URL + "users/{}".format(id)).json()
-
-    """ check user's to do list """
-    todo_list = requests.get("{}todos?userId={}".format(API_URL, id)).json()
-
-    """ filter for task complete """
-    completed_tasks = [task.get("title")
-                       for task in todo_list if task.get("completed") is True]
-
-    """ display progression """
-    print("Employee {} is done with tasks({}/{}):".format(
-        employee.get("name"), len(completed_tasks), len(todo_list)))
-
-    for task in completed_tasks:
-        print("\t {}".format(task))
+    employee_id = int(sys.argv[1])
+    fetch_todo_progress(employee_id)
