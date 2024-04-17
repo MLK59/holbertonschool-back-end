@@ -1,53 +1,78 @@
-#!/bin/user/python3
+#!/usr/bin/python3
+
+"""
+Fetches and exports an employee's completed tasks to JSON from the JSONPlaceholder API.
+"""
 
 import json
 import requests
-from sys import argv
+import sys
 
+def fetch_todo_data():
+    """
+    Fetches user and todo data from JSONPlaceholder API.
 
-def export_user_tasks(user_id):
-    url = f"https://jsonplaceholder.typicode.com/todos?userId={user_id}"
-    response = requests.get(url)
-    tasks = response.json()
-    user_info = {}
+    Returns:
+        tuple: A tuple containing lists of user data and todo data.
+    """
+    url_users = 'https://jsonplaceholder.typicode.com/users'
+    url_todos = 'https://jsonplaceholder.typicode.com/todos'
 
-    for task in tasks:
-        user_info.setdefault(str(user_id), []).append({
-            "username": users[user_id],
-            "task": task["title"],
-            "completed": task["completed"]
-        })
+    response_users = requests.get(url_users)
+    response_todos = requests.get(url_todos)
 
-    return user_info
+    users = response_users.json()
+    todos = response_todos.json()
 
+    return users, todos
 
-def export_all_tasks():
-    all_tasks = {}
-    for user_id in users.keys():
-        all_tasks.update(export_user_tasks(user_id))
-    return all_tasks
+def generate_todo_dict(users, todos):
+    """
+    Generates a dictionary of todos for each user.
 
+    Args:
+        users (list): List of user data dictionaries.
+        todos (list): List of todo data dictionaries.
 
-def export_to_json(file_name, data):
-    with open(file_name, 'w') as f:
-        json.dump(data, f)
+    Returns:
+        dict: A dictionary where keys are user IDs and values are lists of todo dictionaries.
+    """
+    todo_dict = {}
 
+    for user in users:
+        user_id = user['id']
+        username = user['username']
+        todo_dict[user_id] = []
+        for todo in todos:
+            if todo['userId'] == user_id:
+                todo_dict[user_id].append({
+                    'username': username,
+                    'task': todo['title'],
+                    'completed': todo['completed']
+                })
+
+    return todo_dict
+
+def write_todo_json(todo_dict):
+    """
+    Writes todo data dictionary to a JSON file.
+
+    Args:
+        todo_dict (dict): Dictionary containing todo data.
+    """
+    with open('todo_all_employees.json', 'w') as json_file:
+        json.dump(todo_dict, json_file, indent=4)
 
 if __name__ == "__main__":
-    users_url = "https://jsonplaceholder.typicode.com/users"
-    users_response = requests.get(users_url)
-    users_data = users_response.json()
-    users = {user["id"]: user["username"] for user in users_data}
+    if len(sys.argv) != 1:
+        print("Usage: python3 3-dictionary_of_list_of_dictionaries.py")
+        sys.exit(1)
 
-    if len(argv) == 1:
-        all_tasks = export_all_tasks()
-        export_to_json("todo_all_employees.json", all_tasks)
-        print("Data exported to todo_all_employees.json")
-    elif len(argv) == 2:
-        user_id = int(argv[1])
-        user_tasks = export_user_tasks(user_id)
-        file_name = f"{user_id}.json"
-        export_to_json(file_name, user_tasks)
-        print(f"Data exported to {file_name}")
-    else:
-        print("Usage: python3 <script_name> [USER_ID]")
+    # Fetch data from API
+    users, todos = fetch_todo_data()
+
+    # Generate todo dictionary
+    todo_dict = generate_todo_dict(users, todos)
+
+    # Write todo dictionary to JSON file
+    write_todo_json(todo_dict)

@@ -1,45 +1,55 @@
-#!/bin/user/python3
+#!/usr/bin/python3
 
+"""
+Fetches and exports an employee's completed tasks to JSON from the JSONPlaceholder API.
+
+Usage: ./2-export_to_JSON.py <employee_id>
+"""
+
+import json
 import requests
 import sys
-import json
 
-def fetch_todo_progress(employee_id):
-    # API endpoint
-    url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
 
-    # Fetching data from the API
-    response = requests.get(url)
-    todos = response.json()
+def main():
+    """
+    Main function to handle user input, API calls, and data processing.
+    """
 
-    # Getting employee name
-    user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
-    user_response = requests.get(user_url)
-    employee_name = user_response.json()['name']
-
-    # Constructing data for JSON export
-    data = {
-        str(employee_id): [
-            {
-                "task": todo['title'],
-                "completed": todo['completed'],
-                "username": employee_name
-            }
-            for todo in todos
-        ]
-    }
-
-    # Exporting data to JSON file
-    filename = f"{employee_id}.json"
-    with open(filename, "w") as json_file:
-        json.dump(data, json_file, indent=4)
-
-    print(f"Data exported to {filename}")
-
-if __name__ == "__main__":
     if len(sys.argv) != 2:
-        print("Usage: python script.py <employee_id>")
+        print("Usage: ./2-export_to_JSON.py <employee_id>")
         sys.exit(1)
 
-    employee_id = int(sys.argv[1])
-    fetch_todo_progress(employee_id)
+    employee_id = sys.argv[1]
+
+    api_url = "https://jsonplaceholder.typicode.com/"
+
+    try:
+        # Get employee information
+        employee_response = requests.get(f"{api_url}users/{employee_id}")
+        employee_response.raise_for_status()  # Raise exception for non-2xx responses
+        employee = employee_response.json()
+
+        # Get todo list
+        todo_list_response = requests.get(f"{api_url}todos?userId={employee_id}")
+        todo_list_response.raise_for_status()
+        todo_list = todo_list_response.json()
+
+        # Filter completed tasks
+        completed_tasks = [{"task": task["title"], "completed": task["completed"], "username": employee['name']} for task in todo_list]
+
+        # Write to JSON
+        json_file = f"{employee_id}.json"
+        with open(json_file, mode='w') as file:
+            json.dump({employee_id: completed_tasks}, file)
+
+        print(f"JSON file '{json_file}' has been created successfully.")
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+    except KeyError as e:
+        print(f"Invalid data format: Missing key '{e}'")
+
+
+if __name__ == "__main__":
+    main()
