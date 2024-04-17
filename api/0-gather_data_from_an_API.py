@@ -1,4 +1,4 @@
-#!bin/user/python3
+#!/bin/user/python3
 
 import requests
 import sys

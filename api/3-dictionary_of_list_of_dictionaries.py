@@ -1,3 +1,5 @@
+#!/bin/user/python3
+
 import json
 import requests
 from sys import argv
