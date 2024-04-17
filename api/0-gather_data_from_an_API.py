@@ -21,12 +21,12 @@ def main():
 
     employee_id = sys.argv[1]
 
-    try:
-        api_url = "https://jsonplaceholder.typicode.com/"
+    api_url = "https://jsonplaceholder.typicode.com/"
 
+    try:
         # Get employee information
         employee_response = requests.get(f"{api_url}users/{employee_id}")
-        employee_response.raise_for_status()  # Raise an exception for non-2xx responses
+        employee_response.raise_for_status()  # Raise exception for non-2xx responses
         employee = employee_response.json()
 
         # Get todo list
