@@ -3,6 +3,7 @@
 import requests
 import sys
 
+
 def fetch_todo_progress(employee_id):
     """
     Fetches to-do progress information for a given employee ID from the JSONPlaceholder API.
@@ -18,12 +19,13 @@ def fetch_todo_progress(employee_id):
     user_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}"
     todo_url = f"https://jsonplaceholder.typicode.com/users/{employee_id}/todos"
 
-    # Fetch user information (including name)
     try:
+        # Fetch user information (including name)
         user_response = requests.get(user_url)
         user_response.raise_for_status()  # Raise an exception for non-2xx status codes
         user_data = user_response.json()
         employee_name = user_data['name']
+
     except requests.exceptions.RequestException as e:
         print(f"Error fetching user information: {e}")
         sys.exit(1)
@@ -33,6 +35,7 @@ def fetch_todo_progress(employee_id):
         todo_response = requests.get(todo_url)
         todo_response.raise_for_status()
         todos = todo_response.json()
+
     except requests.exceptions.RequestException as e:
         print(f"Error fetching to-do list: {e}")
         sys.exit(1)
@@ -46,6 +49,7 @@ def fetch_todo_progress(employee_id):
     for todo in todos:
         if todo['completed']:
             print(f"\t{todo['title']}")
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 2:
