@@ -11,51 +11,47 @@ import requests
 import sys
 
 
-def main():
-    """
-    Main function to handle user input, API calls, and data processing.
-    """
-
-    if len(sys.argv) != 2:
-        print("Usage: ./0-gather_data_from_an_API.py <employee_id>")
-        sys.exit(1)
-
-    employee_id = sys.argv[1]
-
-    api_url = "https://jsonplaceholder.typicode.com/"
-
+def get_employee_todo_progress(employee_id):
     try:
-        # Get employee information
-        employee_response = requests.get(f"{api_url}users/{employee_id}")
-        employee_response.raise_for_status()
-        # Raise exception for non-2xx responses
-        employee = employee_response.json()
+        # Fetch user data
+        user_response = requests.get(
+            f"https://jsonplaceholder.typicode.com/users/{employee_id}"
+        )
+        user_data = user_response.json()
+        employee_name = user_data.get("name")
 
-        # Get todo list
-        todo_list_response = requests.get(
-            f"{api_url}todos?userId={employee_id}")
-        todo_list_response.raise_for_status()
-        todo_list = todo_list_response.json()
+        # Fetch todos for the employee
+        todos_response = requests.get(
+            f"https://jsonplaceholder.typicode.com/todos?userId={employee_id}"
+        )
+        todos_data = todos_response.json()
 
-        # Filter completed tasks
+        # Count completed tasks
         completed_tasks = [
-            task["title"] for task in todo_list if task["completed"]
+            todo for todo in todos_data if todo.get("completed")
             ]
+        num_completed_tasks = len(completed_tasks)
+        total_num_tasks = len(todos_data)
 
-        # Display progression
-        total_tasks = len(todo_list)
-        completed_count = len(completed_tasks)
-        print(f"Employee {employee['name']}
-              is done with tasks({completed_count}/{total_tasks}): ")
-
+        # Display progress
+        print(
+            "Employee {} is done with tasks ({}/{}):".format(
+                employee_name, num_completed_tasks, total_num_tasks
+            )
+        )
         for task in completed_tasks:
-            print(f"\t {task}")
+            print(f"\t {task.get('title')}")
 
-    except requests.exceptions.RequestException as e:
+    except requests.RequestException as e:
         print(f"Error fetching data: {e}")
-    except KeyError as e:
-        print(f"Invalid data format: Missing key '{e}'")
+    except Exception as e:
+        print(f"An error occurred: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <employee_id>")
+        sys.exit(1)
+
+    employee_id = sys.argv[1]
+    get_employee_todo_progress(employee_id)
