@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 """
-Fetches and displays an employee's completed tasks from the JSONPlaceholder API.
+Fetches and displays an employee's completed tasks
+from the JSONPlaceholder API.
 
 Usage: ./0-gather_data_from_an_API.py <employee_id>
 """
@@ -26,21 +27,26 @@ def main():
     try:
         # Get employee information
         employee_response = requests.get(f"{api_url}users/{employee_id}")
-        employee_response.raise_for_status()  # Raise exception for non-2xx responses
+        employee_response.raise_for_status()
+        # Raise exception for non-2xx responses
         employee = employee_response.json()
 
         # Get todo list
-        todo_list_response = requests.get(f"{api_url}todos?userId={employee_id}")
+        todo_list_response = requests.get(
+            f"{api_url}todos?userId={employee_id}")
         todo_list_response.raise_for_status()
         todo_list = todo_list_response.json()
 
         # Filter completed tasks
-        completed_tasks = [task["title"] for task in todo_list if task["completed"]]
+        completed_tasks = [
+            task["title"] for task in todo_list if task["completed"]
+            ]
 
         # Display progression
         total_tasks = len(todo_list)
         completed_count = len(completed_tasks)
-        print(f"Employee {employee['name']} is done with tasks ({completed_count}/{total_tasks}):")
+        print(f"Employee {employee['name']}
+              is done with tasks({completed_count}/{total_tasks}): ")
 
         for task in completed_tasks:
             print(f"\t {task}")
